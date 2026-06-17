@@ -30,6 +30,111 @@ h1 {
   font-size: 1.6rem;
 }
 
+.subtitle {
+  text-align: center;
+  color: #888;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+/* Giriş / Kayıt ekranı */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-form input {
+  padding: 12px 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.auth-form input:focus {
+  border-color: #764ba2;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.auth-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  background: #764ba2;
+  color: #fff;
+  transition: background 0.2s;
+}
+
+.auth-buttons button:hover {
+  background: #5e3a85;
+}
+
+.auth-buttons button.secondary {
+  background: #f3f3f3;
+  color: #764ba2;
+}
+
+.auth-buttons button.secondary:hover {
+  background: #e7e7e7;
+}
+
+.auth-message {
+  text-align: center;
+  font-size: 0.9rem;
+  min-height: 1.2em;
+  margin-top: 4px;
+}
+
+.auth-message.error {
+  color: #e74c3c;
+}
+
+.auth-message.success {
+  color: #27ae60;
+}
+
+/* Üst bar */
+.topbar {
+  margin-bottom: 16px;
+}
+
+.topbar h1 {
+  margin-bottom: 8px;
+}
+
+.user-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.user-box button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  color: #764ba2;
+  font-size: 0.85rem;
+}
+
+.user-box button:hover {
+  background: #f3f3f3;
+}
+
 .todo-form {
   display: flex;
   gap: 8px;

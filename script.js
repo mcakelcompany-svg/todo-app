@@ -1,3 +1,17 @@
+// --- Görünüm elemanları ---
+const authView = document.getElementById("auth-view");
+const appView = document.getElementById("app-view");
+
+// Auth
+const authForm = document.getElementById("auth-form");
+const emailInput = document.getElementById("auth-email");
+const passwordInput = document.getElementById("auth-password");
+const signupBtn = document.getElementById("signup-btn");
+const authMessage = document.getElementById("auth-message");
+const userEmailEl = document.getElementById("user-email");
+const logoutBtn = document.getElementById("logout-btn");
+
+// Todo
 const form = document.getElementById("todo-form");
 const input = document.getElementById("todo-input");
 const list = document.getElementById("todo-list");
@@ -7,6 +21,92 @@ const filterBtns = document.querySelectorAll(".filter-btn");
 
 let todos = [];
 let filter = "all";
+let currentUser = null;
+
+// ---------------- Auth ----------------
+
+function setAuthMessage(text, type) {
+  authMessage.textContent = text;
+  authMessage.className = "auth-message" + (type ? " " + type : "");
+}
+
+function showAuthView() {
+  currentUser = null;
+  todos = [];
+  appView.hidden = true;
+  authView.hidden = false;
+}
+
+function showAppView(user) {
+  currentUser = user;
+  userEmailEl.textContent = user.email;
+  authView.hidden = true;
+  appView.hidden = false;
+  loadTodos();
+}
+
+async function handleLogin() {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  if (!email || !password) return;
+
+  setAuthMessage("Giriş yapılıyor...");
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
+  if (error) {
+    setAuthMessage(cevirHata(error.message), "error");
+    return;
+  }
+  showAppView(data.user);
+}
+
+async function handleSignup() {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  if (!email || !password) {
+    setAuthMessage("E-posta ve şifre gerekli.", "error");
+    return;
+  }
+  if (password.length < 6) {
+    setAuthMessage("Şifre en az 6 karakter olmalı.", "error");
+    return;
+  }
+
+  setAuthMessage("Kayıt oluşturuluyor...");
+  const { data, error } = await db.auth.signUp({ email, password });
+  if (error) {
+    setAuthMessage(cevirHata(error.message), "error");
+    return;
+  }
+  // E-posta onayı kapalı olduğu için kullanıcı doğrudan oturum açar.
+  if (data.session) {
+    showAppView(data.user);
+  } else {
+    setAuthMessage("Kayıt başarılı, şimdi giriş yapabilirsin.", "success");
+  }
+}
+
+async function handleLogout() {
+  await db.auth.signOut();
+  showAuthView();
+}
+
+// Sık karşılaşılan hata mesajlarını Türkçeleştir
+function cevirHata(msg) {
+  if (/Invalid login credentials/i.test(msg)) return "E-posta veya şifre hatalı.";
+  if (/User already registered/i.test(msg)) return "Bu e-posta zaten kayıtlı. Giriş yap.";
+  if (/Password should be at least/i.test(msg)) return "Şifre en az 6 karakter olmalı.";
+  if (/valid email/i.test(msg)) return "Geçerli bir e-posta gir.";
+  return msg;
+}
+
+authForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  handleLogin();
+});
+signupBtn.addEventListener("click", handleSignup);
+logoutBtn.addEventListener("click", handleLogout);
+
+// ---------------- Todo ----------------
 
 function showMessage(text) {
   list.innerHTML = "";
@@ -74,7 +174,7 @@ function render() {
 async function addTodo(text) {
   const { data, error } = await db
     .from("todos")
-    .insert({ text })
+    .insert({ text, user_id: currentUser.id })
     .select()
     .single();
 
@@ -114,10 +214,7 @@ async function remove(id) {
 }
 
 async function clearCompleted() {
-  const { error } = await db
-    .from("todos")
-    .delete()
-    .eq("completed", true);
+  const { error } = await db.from("todos").delete().eq("completed", true);
   if (error) {
     console.error(error);
     return;
@@ -146,4 +243,15 @@ filterBtns.forEach((btn) => {
   });
 });
 
-loadTodos();
+// ---------------- Başlangıç ----------------
+
+async function init() {
+  const { data } = await db.auth.getSession();
+  if (data.session) {
+    showAppView(data.session.user);
+  } else {
+    showAuthView();
+  }
+}
+
+init();
