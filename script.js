@@ -18,7 +18,7 @@ function showMessage(text) {
 
 async function loadTodos() {
   showMessage("Yükleniyor...");
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("todos")
     .select("*")
     .order("created_at", { ascending: true });
@@ -72,7 +72,7 @@ function render() {
 }
 
 async function addTodo(text) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("todos")
     .insert({ text })
     .select()
@@ -88,7 +88,7 @@ async function addTodo(text) {
 }
 
 async function toggle(todo) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from("todos")
     .update({ completed: !todo.completed })
     .eq("id", todo.id)
@@ -104,7 +104,7 @@ async function toggle(todo) {
 }
 
 async function remove(id) {
-  const { error } = await supabase.from("todos").delete().eq("id", id);
+  const { error } = await db.from("todos").delete().eq("id", id);
   if (error) {
     console.error(error);
     return;
@@ -114,7 +114,7 @@ async function remove(id) {
 }
 
 async function clearCompleted() {
-  const { error } = await supabase
+  const { error } = await db
     .from("todos")
     .delete()
     .eq("completed", true);
