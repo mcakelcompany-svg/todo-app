@@ -89,6 +89,60 @@ h1 {
   background: #e7e7e7;
 }
 
+.text-link {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #764ba2;
+  text-decoration: none;
+  margin-top: 2px;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #bbb;
+  font-size: 0.85rem;
+  margin: 18px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e5e5;
+}
+
+.divider span {
+  padding: 0 12px;
+}
+
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+  color: #444;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.google-btn:hover {
+  background: #f7f7f7;
+  border-color: #d0d0d0;
+}
+
 .auth-message {
   text-align: center;
   font-size: 0.9rem;
