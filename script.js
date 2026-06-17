@@ -5,11 +5,31 @@ const countEl = document.getElementById("count");
 const clearBtn = document.getElementById("clear-completed");
 const filterBtns = document.querySelectorAll(".filter-btn");
 
-let todos = JSON.parse(localStorage.getItem("todos") || "[]");
+let todos = [];
 let filter = "all";
 
-function save() {
-  localStorage.setItem("todos", JSON.stringify(todos));
+function showMessage(text) {
+  list.innerHTML = "";
+  const li = document.createElement("li");
+  li.className = "empty";
+  li.textContent = text;
+  list.appendChild(li);
+}
+
+async function loadTodos() {
+  showMessage("Yükleniyor...");
+  const { data, error } = await supabase
+    .from("todos")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    showMessage("Veriler yüklenemedi 😕");
+    return;
+  }
+  todos = data;
+  render();
 }
 
 function render() {
@@ -22,10 +42,7 @@ function render() {
   });
 
   if (filtered.length === 0) {
-    const li = document.createElement("li");
-    li.className = "empty";
-    li.textContent = "Görev yok 🎉";
-    list.appendChild(li);
+    showMessage("Görev yok 🎉");
   }
 
   filtered.forEach((todo) => {
@@ -35,7 +52,7 @@ function render() {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = todo.completed;
-    checkbox.addEventListener("change", () => toggle(todo.id));
+    checkbox.addEventListener("change", () => toggle(todo));
 
     const span = document.createElement("span");
     span.textContent = todo.text;
@@ -54,40 +71,71 @@ function render() {
   countEl.textContent = `${active} görev`;
 }
 
-function addTodo(text) {
-  todos.push({ id: Date.now(), text, completed: false });
-  save();
+async function addTodo(text) {
+  const { data, error } = await supabase
+    .from("todos")
+    .insert({ text })
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    alert("Görev eklenemedi.");
+    return;
+  }
+  todos.push(data);
   render();
 }
 
-function toggle(id) {
-  todos = todos.map((t) =>
-    t.id === id ? { ...t, completed: !t.completed } : t
-  );
-  save();
+async function toggle(todo) {
+  const { data, error } = await supabase
+    .from("todos")
+    .update({ completed: !todo.completed })
+    .eq("id", todo.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+  todos = todos.map((t) => (t.id === data.id ? data : t));
   render();
 }
 
-function remove(id) {
+async function remove(id) {
+  const { error } = await supabase.from("todos").delete().eq("id", id);
+  if (error) {
+    console.error(error);
+    return;
+  }
   todos = todos.filter((t) => t.id !== id);
-  save();
   render();
 }
 
-form.addEventListener("submit", (e) => {
+async function clearCompleted() {
+  const { error } = await supabase
+    .from("todos")
+    .delete()
+    .eq("completed", true);
+  if (error) {
+    console.error(error);
+    return;
+  }
+  todos = todos.filter((t) => !t.completed);
+  render();
+}
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = input.value.trim();
   if (!text) return;
-  addTodo(text);
   input.value = "";
   input.focus();
+  await addTodo(text);
 });
 
-clearBtn.addEventListener("click", () => {
-  todos = todos.filter((t) => !t.completed);
-  save();
-  render();
-});
+clearBtn.addEventListener("click", clearCompleted);
 
 filterBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -98,4 +146,4 @@ filterBtns.forEach((btn) => {
   });
 });
 
-render();
+loadTodos();
